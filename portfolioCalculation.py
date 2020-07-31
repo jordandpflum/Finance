@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import math
+from prettytable import PrettyTable
 
 priceData = pd.read_csv("Data/portfolioAdjPriceData.csv", index_col=0)
 
@@ -144,12 +145,30 @@ sigmarp = randPort[1]
 randPortComplete_RiskSame = (float(erp), float(sigmarp))
 
 
+# Summary Table
+table = PrettyTable(['Portfolio', 'Annual Returns', 'Annual SD', 'Annual Returns Diff to Random Portfolio', 'Annual SD Diff to Random Portfolio'])
+portfolios = [["Random Portfolio", randPort],
+              ["Efficient Portfolio (Same Returns as Random Portfolio)", randPortEff],
+              ["Optimal Portfolio", ORPort],
+              ["Optimal Complete Portfolio (Same Returns as Random Portfolio)",randPortComplete_ESame],
+              ["Optimal Complete Portfolio (Same Risk as Random Portfolio)", randPortComplete_RiskSame]
+              ]
+originalPort_AnnualRet = (1+randPort[0])**12 - 1
+originalPort_AnnualSD = randPort[1] * math.sqrt(12)
+for portfolio in portfolios:
+    annual_ret = (1+portfolio[1][0])**12 - 1
+    annual_sd = portfolio[1][1] * math.sqrt(12)
+    rec = [portfolio[0], annual_ret, annual_sd, annual_ret-originalPort_AnnualRet, annual_sd-originalPort_AnnualSD]
+    table.add_row(rec)
+
+print(table)
 
 # Plotting
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
 ax1.scatter(EF[1], EF[0], s=10, c='b', marker="s", label='EF')
+#plt.plot(EF[1], EF[0], linestyle='-', c='b', marker="s", label='EF')
 ax1.scatter(ORPort[1], ORPort[0], s=10, c='r', marker="o", label='Optimal Risky Portfolio')
 ax1.scatter(randPort[1], randPort[0], s=10, c='g', marker="o", label='Random Portfolio')
 ax1.scatter(randPortEff[1], randPortEff[0], s=10, c='y', marker="o", label='Random Efficient Portfolio')
@@ -160,4 +179,5 @@ plt.legend(loc='upper left', prop={'size': 6});
 plt.title('Market Portfolio')
 plt.xlabel('sigma')
 plt.ylabel('E(rp)')
+#plt.savefig('marketPortfolioOptimization.png')
 plt.show()
