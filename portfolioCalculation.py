@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import math
+import scipy.stats as stats
 from prettytable import PrettyTable
 
 priceData = pd.read_csv("Data/portfolioAdjPriceData.csv", index_col=0)
@@ -139,6 +140,7 @@ erp = randPort[0]
 sigmarp = (randPort[0] - rf)/optimalSharpeRatio
 randPortComplete_ESame = (float(erp), float(sigmarp))
 
+
 # Calculate Complete Random Portfolio (same risk as original random portfolio)
 erp = optimalSharpeRatio*randPort[1] + rf
 sigmarp = randPort[1]
@@ -167,8 +169,8 @@ print(table)
 fig = plt.figure()
 ax1 = fig.add_subplot(111)
 
-ax1.scatter(EF[1], EF[0], s=10, c='b', marker="s", label='EF')
-#plt.plot(EF[1], EF[0], linestyle='-', c='b', marker="s", label='EF')
+#ax1.scatter(EF[1], EF[0], s=10, c='b', marker="s", label='EF')
+plt.plot(EF[1], EF[0], linestyle='-', c='b', marker="s", label='EF')
 ax1.scatter(ORPort[1], ORPort[0], s=10, c='r', marker="o", label='Optimal Risky Portfolio')
 ax1.scatter(randPort[1], randPort[0], s=10, c='g', marker="o", label='Random Portfolio')
 ax1.scatter(randPortEff[1], randPortEff[0], s=10, c='y', marker="o", label='Random Efficient Portfolio')
@@ -180,4 +182,23 @@ plt.title('Market Portfolio')
 plt.xlabel('sigma')
 plt.ylabel('E(rp)')
 #plt.savefig('marketPortfolioOptimization.png')
+plt.show()
+
+
+x_1 = np.linspace(randPort[0] - 3*randPort[1], randPort[0] + 3*randPort[1], 100)
+x_2 = np.linspace(randPortComplete_RiskSame[0] - 3*randPortComplete_RiskSame[1], randPortComplete_RiskSame[0] + 3*randPortComplete_RiskSame[1], 100)
+plt.plot(x_1, stats.norm.pdf(x_1, randPort[0], randPort[1]), label='Random Portfolio')
+plt.plot(x_2, stats.norm.pdf(x_2, randPortComplete_RiskSame[0], randPortComplete_RiskSame[1]), label='Complete Random Portfolio (Same Risk)')
+plt.legend(loc='upper left', prop={'size': 5});
+plt.title('Portfolio Distributions')
+plt.xlabel('E(rp)')
+plt.show()
+
+x_1 = np.linspace(randPort[0] - 3*randPort[1], randPort[0] + 3*randPort[1], 100)
+x_2 = np.linspace(randPortComplete_ESame[0] - 3*randPortComplete_ESame[1], randPortComplete_ESame[0] + 3*randPortComplete_ESame[1], 100)
+plt.plot(x_1, stats.norm.pdf(x_1, randPort[0], randPort[1]), label='Random Portfolio')
+plt.plot(x_2, stats.norm.pdf(x_2, randPortComplete_ESame[0], randPortComplete_ESame[1]), label='Complete Random Portfolio (Same Risk)')
+plt.legend(loc='upper left', prop={'size': 5});
+plt.title('Portfolio Distributions')
+plt.xlabel('E(rp)')
 plt.show()
