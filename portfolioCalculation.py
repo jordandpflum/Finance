@@ -28,7 +28,7 @@ covMatrix = returnData.cov().to_numpy()
 
 # Define RF (monthly)
 irx = 0.98
-rf = irx*.1*.01/12
+rf = irx*.01/12
 
 
 # GMV Calculation
@@ -67,7 +67,7 @@ A[0:numAssets,numAssets+1] = historicalReturns
 EF = [[],[]]
 
 mu0Increment = .001
-mu0Itterations = 20
+mu0Itterations = 25
 
 for mu0 in np.arange(minVarPort[0], mu0Itterations*mu0Increment + minVarPort[0], mu0Increment):
     # Create b
@@ -104,6 +104,46 @@ calRisks = np.arange(0, EF[1][-1], mu0Increment)
 calErps = list(map(lambda x: x * optimalSharpeRatio + rf, np.arange(0, EF[1][-1], mu0Increment)))
 
 
+# Random Portfolio
+randPort_w = np.array([[0.9],
+                         [0.05],
+                         [0],
+                         [0],
+                         [0],
+                         [0],
+                         [0.05]]
+                        )
+erp = np.dot(np.transpose(randPort_w), historicalReturns)
+sigmarp = math.sqrt(np.dot(np.transpose(randPort_w), np.dot(covMatrix, randPort_w)))
+randPort = (float(erp), float(sigmarp))
+
+# Calculate Efficient Random Portfolio (same return as random)
+# Create b
+b = np.zeros((numAssets + 2, 1))
+# Set Initial Constraints (w'1 = 1), (E(rp)=mu0)
+b[numAssets, 0] = 1
+b[numAssets + 1, 0] = randPort[0]
+
+# Solve for x
+x = np.dot(np.linalg.inv(A), b)
+
+# Calculate EF Portfolio
+w = x[0:numAssets]
+erp = np.dot(np.transpose(w), historicalReturns)
+sigmarp = math.sqrt(np.dot(np.transpose(w), np.dot(covMatrix, w)))
+randPortEff = (float(erp), float(sigmarp))
+
+# Calculate Complete Random Portfolio (same return as original random portfolio)
+erp = randPort[0]
+sigmarp = (randPort[0] - rf)/optimalSharpeRatio
+randPortComplete_ESame = (float(erp), float(sigmarp))
+
+# Calculate Complete Random Portfolio (same risk as original random portfolio)
+erp = optimalSharpeRatio*randPort[1] + rf
+sigmarp = randPort[1]
+randPortComplete_RiskSame = (float(erp), float(sigmarp))
+
+
 
 # Plotting
 fig = plt.figure()
@@ -111,8 +151,12 @@ ax1 = fig.add_subplot(111)
 
 ax1.scatter(EF[1], EF[0], s=10, c='b', marker="s", label='EF')
 ax1.scatter(ORPort[1], ORPort[0], s=10, c='r', marker="o", label='Optimal Risky Portfolio')
+ax1.scatter(randPort[1], randPort[0], s=10, c='g', marker="o", label='Random Portfolio')
+ax1.scatter(randPortEff[1], randPortEff[0], s=10, c='y', marker="o", label='Random Efficient Portfolio')
+ax1.scatter(randPortComplete_ESame[1], randPortComplete_ESame[0], s=10, c='k', marker="o", label='Complete Random Portfolio (Same Return)')
+ax1.scatter(randPortComplete_RiskSame[1], randPortComplete_RiskSame[0], s=10, c='m', marker="o", label='Complete Random Portfolio (Same Risk)')
 plt.plot(calRisks, calErps, label='CAL')
-plt.legend(loc='upper left');
+plt.legend(loc='upper left', prop={'size': 6});
 plt.title('Market Portfolio')
 plt.xlabel('sigma')
 plt.ylabel('E(rp)')
