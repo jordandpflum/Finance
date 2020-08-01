@@ -27,7 +27,6 @@ marketRiskPremium = marketProxy.apply(lambda x: x - rf)
 
 marketVariance = np.var(marketProxy)
 
-# Test Case (AAPL)
 SCL = pd.DataFrame(index=tickers,columns=["Beta", "Alpha", "Total Risk", "Systematic Risk", "Non-Sys Risk"])
 for ticker in tickers:
     # Calculate Beta and Alpha
