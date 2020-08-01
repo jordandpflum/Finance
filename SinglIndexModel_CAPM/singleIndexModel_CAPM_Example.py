@@ -25,13 +25,18 @@ rf = irx*.01/12
 portfolioRiskPremium = portfolio.apply(lambda x: x - rf)
 marketRiskPremium = marketProxy.apply(lambda x: x - rf)
 
+marketVariance = np.var(marketProxy)
+
 # Test Case (AAPL)
-SCL = pd.DataFrame(index=tickers,columns=["Beta", "Alpha"])
+SCL = pd.DataFrame(index=tickers,columns=["Beta", "Alpha", "Total Risk", "Systematic Risk", "Non-Sys Risk"])
 for ticker in tickers:
     # Calculate Beta and Alpha
     beta, alpha = np.polyfit(marketRiskPremium, portfolioRiskPremium[ticker], 1)
     SCL.loc[ticker, 'Beta'] = beta
     SCL.loc[ticker, 'Alpha'] = alpha
+    SCL.loc[ticker, 'Total Risk'] = np.var(portfolioRiskPremium[ticker])
+    SCL.loc[ticker, 'Systematic Risk'] = beta**2 * marketVariance
+    SCL.loc[ticker, 'Non-Sys Risk'] = np.var(portfolioRiskPremium[ticker]) - beta**2 * marketVariance
 
 # SML
 slope = np.average(marketRiskPremium)
