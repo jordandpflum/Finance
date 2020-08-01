@@ -8,12 +8,12 @@ import random
 
 
 # Read in Data
-price_data = pd.read_csv('Data/returnData.csv', index_col=0)
+return_data = pd.read_csv('Data/returnData.csv', index_col=0)
 
 
 # Get sample portfolio of n assets
 num_assets = 7
-tickers_list = random.sample(list(price_data.columns), num_assets)  # careful tweaking this number. This becomes computationally expensive
+tickers_list = random.sample(list(return_data.columns), num_assets)  # careful tweaking this number. This becomes computationally expensive
 n_port_stdev = [[],[]]
 
 def calculate_portfolio_variance(tickers, data):
@@ -30,7 +30,7 @@ for L in range(1, len(tickers_list) + 1):
     port_variances_at_n = []
     for subset in itertools.combinations(tickers_list, L):
         l_subset = list(subset)
-        port_val = calculate_portfolio_variance(l_subset, price_data)
+        port_val = calculate_portfolio_variance(l_subset, return_data)
         port_variances_at_n.append(port_val)
 
     n_port_stdev[0].append(L)
@@ -40,7 +40,7 @@ for L in range(1, len(tickers_list) + 1):
 
 print(tickers_list)
 print(n_port_stdev)
-var_spy = np.std(price_data["SPY"])
+var_spy = np.std(return_data["SPY"])
 plt.plot(range(1, len(tickers_list) + 1), np.full((len(tickers_list)), var_spy))
 plt.plot(n_port_stdev[0], n_port_stdev[1])
 #plt.xlabel('number of securities')
