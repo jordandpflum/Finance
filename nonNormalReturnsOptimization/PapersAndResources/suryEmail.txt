@@ -1,0 +1,35 @@
+I have been working on some research related to optimization of non-normal returns.  If you’d like to run some experiments, 
+I can include you all in the acknowledgements if we decide to publish it.  
+ 
+Here’s the idea:  it is widely known that many hedge fund strategies include non-traditional exposures.  As one example, 
+there are some strategies that are (either explicitly or implicitly) short volatility.  What does this do?  It can actually 
+inflate the sharpe ratio, giving an “artificial” outperformance when compared to other traditional strategies.  Remember that if 
+SR =  (E( r) – rf) / stdev, then you could inflate the measure by finding a strategy that minimizes the stdev…but there are rarely 
+any “free lunches” :  in exchange, these hedge funds are taking on a different type of risk—perhaps skew or kurtosis or some other 
+combination.
+ 
+So, we can look at some hedge funds (a lot of those return series are proprietary) or hedge fund indices (e.g., HFRI) to first run 
+summary data on their characteristics (let’s just get an idea of their mean, stdev, skew, and kurt).  Then, you can run an MVO optimization 
+on, say, Equities (SPY), Fixed Income (AGG), and the set of HFRI indices (there is a composite index, and indices that represent each of the 
+sub-strategies).  It would be best to use the individual strategies rather than the composite (since the composite will mask some of the underlying 
+risks).  MVO only considers mean versus variance.  So we will collect the efficient frontier and the ORP for that exercise.  
+ 
+Then, we will run the optimization again, but this time using M-CVAR (mean versus conditional value at risk)  or M-VSK (mean versus variance, 
+skew, and kurtosis) to determine what the efficient frontier looks like under that process when we are explicitly optimizing considering the 
+fact that a strategy might be non-normal!  We will also look at that ORP.  
+ 
+It is likely that the two ORPs will be statistically significantly different if the HFRI indices are in fact non-normal.   Remember that MVO 
+would basically be a constrained subset of MVSK or MCVaR where the Skew and Excess Kurtosis is zero (ignored).  I ran this experiment in 2002 
+for my hedge fund and wealth management business and it was extremely successful:  we found that MVO underestimated the risk in the optimal 
+risky portfolio (as measured by M-CVaR) by as much as 50%.  The underestimation was most pronounced for those strategies that were already low 
+volatility.  What that means is that for those strategies that are marketed as being “low risk” they actually are the ones that underestimate 
+the risk the most (from a relative point of view).  I updated this experiment in 2008 just before selling my company, and it was one of the 
+intellectual properties that the buyer definitely wanted.  So, I can’t give you my data, but a lot of this is in the public domain now anyway.  
+There was a paper written in 2004:  Risks and Portfolio Decisions by Naik and Agarwal (you can google it), where they define their methodology.  
+HFRI data are expensive, and I have tried to get the business librarian to get it for us, but its still in process.  But you might be able to use 
+the HFRX series of indexes, which are freely available online.
+ 
+The findings, if substantial, would have significant implications for strategy allocation for firms that allocate money (wealth managers) or 
+fund of funds (FoF) firms.  When I did this in 2002, it was avant-garde.  Today, most people know the issue, but the data has not been updated 
+in quite a while.  Given that we have had a strong bull market punctuated by two major crises in the past 14 years, it could be interesting to 
+see if the results have changed.
