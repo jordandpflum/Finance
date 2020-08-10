@@ -61,6 +61,7 @@ def constraint_mu_null(w, mu, mu_null):
 
 plot_data = {}
 
+
 total_portfolios = 10
 for i in range(total_portfolios):
     sys.stdout.write('\r')
