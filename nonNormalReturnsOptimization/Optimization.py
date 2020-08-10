@@ -60,16 +60,22 @@ def constraint_mu_null(w, mu, mu_null):
 
 
 plot_data = {}
+risks = []
+returns = []
+cvars = []
 
 
-total_portfolios = 10
+
+total_portfolios = 1500
 for i in range(total_portfolios):
     sys.stdout.write('\r')
     sys.stdout.write('Percent Complete:  ' + str(round((i / total_portfolios) * 100, 2)) + '%')
     sys.stdout.flush()
 
+    stocks = ['ADBE', 'ADI', 'AAPL']
+    df_returns = df_returns[stocks]
     confidence_val = 95
-    mu_null_value = 0.001 * i + 0.001
+    mu_null_value = 0.0001 * i + 0.0001
     mu_matrix = df_returns.mean()
     covariance_matrix = df_returns.cov()
     cons = [{'type': 'eq', 'fun': constraint_sum},
@@ -81,9 +87,19 @@ for i in range(total_portfolios):
                                        constraints=cons,
                                        options={'maxiter': 20000})
 
-    plot_data[optimize.fun] = mu_null_value
 
+    weights = optimize.x
+    port_return = mu_null_value
+    port_risk = np.dot(np.dot(np.transpose(weights), covariance_matrix), weights)
+    plot_data[port_risk] = port_return
+
+    risks.append(port_risk)
+    returns.append(port_return)
+    cvars.append(optimize.fun)
 
 plt.plot(plot_data.keys(), plot_data.values())
 plt.show()
 
+print(risks)
+print(returns)
+print(cvars)
