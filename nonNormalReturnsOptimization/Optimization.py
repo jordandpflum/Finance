@@ -83,6 +83,7 @@ for i in range(total_portfolios):
 
     plot_data[optimize.fun] = mu_null_value
 
+
 plt.plot(plot_data.keys(), plot_data.values())
 plt.show()
 
