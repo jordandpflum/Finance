@@ -13,8 +13,8 @@ pd.set_option('display.max_columns', None)
 pd.options.display.width = 0
 
 df_returns_data = pd.read_csv('C:\\Users\\jason\\PycharmProjects\\UT MSBA\\Decision Analytics\\Data.csv', index_col=0)
-# df_returns_data = pd.read_csv('Data2.csv', index_col=0)
-
+df_returns_hf = pd.read_csv('Data_HF - Copy.csv', index_col=0).dropna()
+# print(df_returns_hf)
 
 def calculate_mu(return_data):
     """
@@ -67,6 +67,25 @@ def calculate_cvar3(arguments, returns, alpha):
     c_var_p = -1 / alpha * (1 - nu) ** -1 * (nu - 2 + xanu ** 2) * t.pdf(xanu, nu) * sigma_p - mu_p
 
     return c_var_p
+
+
+def calculate_var(arguments, returns, alpha):
+    """
+       Calculates the conditional value at risk at a given confidence level
+       :param arguments: the iterative weights thrown in by the optimizer
+       :param returns: data frame of returns for all securities
+       :param confidence: confidence level for value at risk
+       :return: the conditional value at risk at a given confidence level at the portfolio level
+       """
+
+    w = np.array(arguments)
+    portfolio_returns = np.dot(returns, w)
+    portfolio_returns_sorted = np.sort(portfolio_returns, axis=0)
+    n_returns = len(portfolio_returns_sorted)
+    alpha_index = round(alpha * n_returns)
+    var = portfolio_returns_sorted[alpha_index]
+
+    return var
 
 
 def constraint_sum(w):
@@ -136,7 +155,9 @@ def efficient_frontier_c_var(mu_null_start, mu_null_increment, mu_null_iteration
         cons = [{'type': 'eq', 'fun': constraint_sum},
                 {'type': 'eq', 'fun': constraint_mu_null, 'args': (mu_matrix, mu_null_value,)}]
 
-        optimize = scipy.optimize.minimize(calculate_cvar3,
+
+
+        optimize = scipy.optimize.minimize(calculate_var,
                                            x0=np.full((len(df_returns.columns)), 1),
                                            args=(df_returns, alpha),
                                            constraints=cons,
@@ -183,8 +204,8 @@ def efficient_frontier_m_variance(mu_null_start, mu_null_increment, mu_null_iter
     return plot_data
 
 
-cvar_ef = efficient_frontier_c_var(0.0001, 0.0001, 400, df_returns_data, 0.05)
-mvar_ef = efficient_frontier_m_variance(0.0001, 0.0001, 400, df_returns_data)
+cvar_ef = efficient_frontier_c_var(0.0001, 0.0001, 10, df_returns_hf, 0.05)
+mvar_ef = efficient_frontier_m_variance(0.0001, 0.0001, 10, df_returns_hf)
 
 plt.plot(mvar_ef.keys(), mvar_ef.values(), label='M-Variance')
 plt.plot(cvar_ef.keys(), cvar_ef.values(), label='C-VaR')
@@ -192,18 +213,3 @@ plt.xlabel('Risk')
 plt.ylabel('Return')
 plt.legend()
 plt.show()
-
-# plt.plot(cvar_ef.keys(), cvar_ef.values(), label='C-VaR')
-plt.plot(mvar_ef.keys(), mvar_ef.values(), label='M-Variance')
-plt.xlabel('Risk')
-plt.ylabel('Return')
-plt.legend()
-plt.show()
-
-plt.plot(cvar_ef.keys(), cvar_ef.values(), label='C-VaR')
-# plt.plot(mvar_ef.keys(), mvar_ef.values(), label='M-Variance')
-plt.xlabel('Risk')
-plt.ylabel('Return')
-plt.legend()
-plt.show()
-
