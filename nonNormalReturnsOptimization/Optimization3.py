@@ -12,7 +12,7 @@ import random
 pd.set_option('display.max_columns', None)
 pd.options.display.width = 0
 
-df_returns_data = pd.read_csv('C:\\Users\\jason\\PycharmProjects\\UT MSBA\\Decision Analytics\\Data.csv', index_col=0)
+df_returns_data = pd.read_csv('Data.csv', index_col=0)
 df_returns_hf = pd.read_csv('Data_HF - Copy.csv', index_col=0).dropna()
 
 
