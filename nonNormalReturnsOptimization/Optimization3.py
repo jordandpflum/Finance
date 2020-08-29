@@ -64,8 +64,8 @@ def efficient_frontier_m_variance(mu_null_start, mu_null_increment, mu_null_iter
 
         eff_weights = efficient_weights_mean_variance(covariance_matrix, mu_null_value, mu_matrix)
         port_return = mu_null_value
-        port_variance = port_variance(eff_weights, covariance_matrix)[0][0]
-        port_risk = math.sqrt(port_variance)
+        port_var = port_variance(eff_weights, covariance_matrix)[0][0]
+        port_risk = math.sqrt(port_var)
 
         plot_data[port_risk] = port_return
 
@@ -86,8 +86,8 @@ def efficient_frontier_cvar(mu_null_start, mu_null_increment, mu_null_iterations
 
         eff_weights = efficient_weights_cvar(return_data, mu_null_value, confidence)
         port_return = mu_null_value
-        port_variance = port_variance(eff_weights, covariance_matrix)
-        port_risk = math.sqrt(port_variance)
+        port_var = port_variance(eff_weights, covariance_matrix)
+        port_risk = math.sqrt(port_var)
 
         plot_data[port_risk] = port_return
 
@@ -133,6 +133,7 @@ def calculate_cvar(weights, returns, confidence):
     c_var = (1 / confidence_index) * portfolio_returns_sorted[:confidence_index].sum()
     return -c_var
 
+
 def efficient_weights_cvar(returns, mu0, confidence):
     mu_matrix = returns.mean()
 
@@ -148,8 +149,8 @@ def efficient_weights_cvar(returns, mu0, confidence):
     return optimize.x
 
 
-cvar_ef = efficient_frontier_cvar(0.0001, 0.0001, 100, df_returns_hf, 95)
-mvar_ef = efficient_frontier_m_variance(0.0001, 0.0001, 100, df_returns_hf)
+cvar_ef = efficient_frontier_cvar(0.0001, 0.0001, 50, df_returns_hf, 95)
+mvar_ef = efficient_frontier_m_variance(0.0001, 0.0001, 50, df_returns_hf)
 
 plt.plot(mvar_ef.keys(), mvar_ef.values(), label='M-Variance')
 plt.plot(cvar_ef.keys(), cvar_ef.values(), label='C-VaR')
