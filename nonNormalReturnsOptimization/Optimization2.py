@@ -208,44 +208,42 @@ def optimal_portfolio_weights_variance(returns_data, risk_free):
     return optimize.x
 
 
-def plot_everything(data):
+def plot_everything(data, direc):
     rf_rate = 0.0008
-    cvar_ef = efficient_frontier_cvar(0.0001, 0.0001, 100, data, 95)
-    # mvar_ef = efficient_frontier_m_variance(0.0001, 0.0001, 50, data)
-
+    cvar_ef = efficient_frontier_cvar(0.0001, 0.0001, 1000, data, 95)
+    mvar_ef = efficient_frontier_m_variance(0.0001, 0.0001, 1000, data)
+    #
     # variance_optimal_weights = optimal_portfolio_weights_variance(data, rf_rate)
     # cvar_optimal_weights = optimal_portfolio_weights_cvar(data, 95, rf_rate)
     # variance_sharpe = -maximize_variance_sharpe(variance_optimal_weights, data, rf_rate)
     # cvar_sharpe = -maximize_cvar_sharpe(cvar_optimal_weights, data, rf_rate, 95)
+    #
+    #
 
-
-    # print(variance_optimal_weights)
-    # print(cvar_optimal_weights)
-
-    # print(variance_sharpe)
-    # print(cvar_sharpe)
     # plt.plot(mvar_ef.keys(), mvar_ef.values(), label='M-Variance')
-    plt.plot(cvar_ef.keys(), cvar_ef.values(), label='C-VaR')
+    # plt.plot(cvar_ef.keys(), cvar_ef.values(), label='C-VaR')
 
     # x1, y1 = [0, 1], [rf_rate, variance_sharpe * 1 + rf_rate]
     # plt.plot(x1, y1, marker='o')
-
-    print(cvar_ef)
-    pd.DataFrame(cvar_ef, index=cvar_ef.keys()).to_csv('optimal_cvar.csv')
+    opt = 'cvar'
+    url = f'ef_{opt}_{direc}.csv'
+    pd.DataFrame(cvar_ef, index=[0]).to_csv(url)
+    opt = 'mvar'
+    url = f'ef_{opt}_{direc}.csv'
+    pd.DataFrame(mvar_ef, index=[0]).to_csv(url)
 
 
 
     # x1, y1 = [0, .01], [rf_rate, cvar_sharpe * .01 + rf_rate]
     # plt.plot(x1, y1, marker='o')
 
-    plt.xlabel('Risk')
-    plt.ylabel('Return')
-    plt.legend()
-    plt.show()
 
 
 
 
 
 
-# plot_everything(df_returns_hf)
+
+plot_everything(df_returns_hf, 'hf')
+plot_everything(df_returns_data, 'norm')
+
