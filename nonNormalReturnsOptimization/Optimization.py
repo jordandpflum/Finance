@@ -4,17 +4,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import sys
 import math
-from scipy.stats import norm
-from scipy.stats import t
-
 
 
 pd.set_option('display.max_columns', None)
 pd.options.display.width = 0
 
-df_returns_data = pd.read_csv('C:\\Users\\jason\\PycharmProjects\\UT MSBA\\Decision Analytics\\Data.csv', index_col=0)
+df_returns_data = pd.read_csv('Data.csv', index_col=0)
 df_returns_hf = pd.read_csv('Data_HF - Copy.csv', index_col=0).dropna()
-# print(df_returns_hf)
+
+
+def port_return(weights_m, mu_m):
+    return np.dot(np.transpose(weights_m), mu_m)
+
 
 def calculate_mu(return_data):
     """
@@ -25,67 +26,69 @@ def calculate_mu(return_data):
     return np.array(return_data.mean())
 
 
-def calculate_cvar(arguments, returns, confidence):
-    """
-    Calculates the conditional value at risk at a given confidence level
-    :param arguments: the iterative weights thrown in by the optimizer
-    :param returns: data frame of returns for all securities
-    :param confidence: confidence level for value at risk
-    :return: the conditional value at risk at a given confidence level at the portfolio level
-    """
-
-    w = np.array(arguments)
-    portfolio_returns = np.dot(returns, w)
-    portfolio_returns_sorted = np.sort(portfolio_returns, axis=0)
-    n_returns = len(portfolio_returns_sorted)
-    confidence_index = round(((100 - confidence) * 0.01) * n_returns)
-    # confidence_index = round((1 - (100 - confidence) * 0.01) * n_returns)
-    c_var = (1 / confidence_index) * portfolio_returns_sorted[:confidence_index].sum()
-    return c_var
+def port_variance(weights_m, sigma_m):
+    return np.dot(np.dot(np.transpose(weights_m), sigma_m), weights_m)
 
 
-def calculate_cvar2(arguments, returns, alpha):
+def efficient_weights_mean_variance(cov_m, mu0, mu_m):
+    matrix_a = np.zeros((len(cov_m) + 2, len(cov_m) + 2))
+    matrix_a[0:len(cov_m), 0:len(cov_m)] = cov_m * 2
+    matrix_a[len(cov_m), 0:len(cov_m)] = 1
+    matrix_a[len(cov_m) + 1, 0:len(cov_m)] = np.transpose(mu_m)
+    matrix_a[0:len(cov_m), len(cov_m)] = 1
+    matrix_a[0:len(cov_m), len(cov_m) + 1] = list(mu_m)
 
-    w = np.array(arguments)
-    portfolio_returns = np.dot(returns, w)
-    mu_p = portfolio_returns.mean()
-    sigma_p = portfolio_returns.std()
-    c_var_p = (alpha ** -1) * norm.pdf(norm.ppf(alpha)) * sigma_p - mu_p
+    matrix_b = np.zeros((len(mu_m) + 2, 1))
+    matrix_b[len(mu_m), 0] = 1
+    matrix_b[len(mu_m) + 1, 0] = mu0
 
-    return c_var_p
+    opt = np.dot(np.linalg.inv(matrix_a), matrix_b)
 
-
-def calculate_cvar3(arguments, returns, alpha):
-
-    w = np.array(arguments)
-    portfolio_returns = np.dot(returns, w)
-    mu_p = portfolio_returns.mean()
-    sigma_p = portfolio_returns.std()
-    nu = 6
-    xanu = t.ppf(alpha, nu)
-
-    c_var_p = -1 / alpha * (1 - nu) ** -1 * (nu - 2 + xanu ** 2) * t.pdf(xanu, nu) * sigma_p - mu_p
-
-    return c_var_p
+    return opt[:-2]
 
 
-def calculate_var(arguments, returns, alpha):
-    """
-       Calculates the conditional value at risk at a given confidence level
-       :param arguments: the iterative weights thrown in by the optimizer
-       :param returns: data frame of returns for all securities
-       :param confidence: confidence level for value at risk
-       :return: the conditional value at risk at a given confidence level at the portfolio level
-       """
+def efficient_frontier_m_variance(mu_null_start, mu_null_increment, mu_null_iterations, return_data):
 
-    w = np.array(arguments)
-    portfolio_returns = np.dot(returns, w)
-    portfolio_returns_sorted = np.sort(portfolio_returns, axis=0)
-    n_returns = len(portfolio_returns_sorted)
-    alpha_index = round(alpha * n_returns)
-    var = portfolio_returns_sorted[alpha_index]
+    plot_data = {}
+    for i in range(mu_null_iterations):
+        sys.stdout.write('\r')
+        sys.stdout.write('Percent Complete:  ' + str(round((i / mu_null_iterations) * 100, 2)) + '%')
+        sys.stdout.flush()
 
-    return var
+        mu_null_value = mu_null_increment * i + mu_null_start
+        mu_matrix = np.transpose(return_data.mean())
+        covariance_matrix = return_data.cov()
+
+        eff_weights = efficient_weights_mean_variance(covariance_matrix, mu_null_value, mu_matrix)
+        port_return = mu_null_value
+        port_var = port_variance(eff_weights, covariance_matrix)[0][0]
+        port_risk = calculate_cvar(eff_weights, return_data, 95)
+
+        plot_data[port_risk] = port_return
+
+    return plot_data
+
+
+def efficient_frontier_cvar(mu_null_start, mu_null_increment, mu_null_iterations, return_data, confidence):
+
+    plot_data = {}
+    for i in range(mu_null_iterations):
+        sys.stdout.write('\r')
+        sys.stdout.write('Percent Complete:  ' + str(round((i / mu_null_iterations) * 100, 2)) + '%')
+        sys.stdout.flush()
+
+        mu_null_value = mu_null_increment * i + mu_null_start
+        mu_matrix = np.transpose(return_data.mean())
+        covariance_matrix = return_data.cov()
+
+        eff_weights = efficient_weights_cvar(return_data, mu_null_value, confidence)
+        port_return = mu_null_value
+        port_var = port_variance(eff_weights, covariance_matrix)
+        port_risk = calculate_cvar(eff_weights, return_data, 95)
+
+        plot_data[port_risk] = port_return
+
+    return plot_data
 
 
 def constraint_sum(w):
@@ -109,107 +112,107 @@ def constraint_mu_null(w, mu, mu_null):
     return ret - mu_null
 
 
-def port_return(weights_m, mu_m):
-    return np.dot(np.transpose(weights_m), mu_m)
+def calculate_cvar(weights, returns, confidence):
+    """
+    Calculates the conditional value at risk at a given confidence level
+    :param weights: the iterative weights thrown in by the optimizer
+    :param returns: data frame of returns for all securities
+    :param confidence: confidence level for value at risk
+    :return: the conditional value at risk at a given confidence level at the portfolio level
+    """
+
+    w = np.array(weights)
+    portfolio_returns = np.dot(returns, w)  # calculate the time series of portfolio returns given weights
+
+    portfolio_returns_sorted = np.sort(portfolio_returns, axis=0)  # sort these returns in ascending order
+    n_returns = len(portfolio_returns_sorted)  # get the number of returns in this time period
+    confidence_index = round(((100 - confidence) * 0.01) * n_returns)  # find the return position in the list of sorted
+    #  returns given a confidence level. This is considered the Value at Risk
+
+    c_var = (1 / confidence_index) * portfolio_returns_sorted[:confidence_index].sum()  # get the average return
+    #  below the VaR. These are still in negative form and sorted as ascending, so we want the sum of the lowest return
+    #  to the VaR return.
+
+    return -c_var  # we negate this value because we are trying to minimize a loss. Loss functions are positive.
 
 
-def port_var(weights_m, sigma_m):
-    return np.dot(np.dot(np.transpose(weights_m), sigma_m), weights_m)
+def efficient_weights_cvar(returns, mu0, confidence):
+    mu_matrix = returns.mean()
+
+    cons = [{'type': 'eq', 'fun': constraint_sum},
+            {'type': 'eq', 'fun': constraint_mu_null, 'args': (mu_matrix, mu0)}]
+
+    minimizer_kwargs = {"args": (returns, confidence),
+                        "constraints": cons}
+
+    optimize = scipy.optimize.basinhopping(calculate_cvar,
+                                           x0=np.full((len(returns.columns)), 1 / len(returns.columns)),
+                                           minimizer_kwargs=minimizer_kwargs)
+    return optimize.x
 
 
-def port_sharpe(return_p, risk_p, rf):
-    return (return_p - rf) / risk_p
+def plot_both_efficient_frontiers(data):
+
+    cvar_ef = efficient_frontier_cvar(0.0001, 0.0001, 50, data, 95)
+    mvar_ef = efficient_frontier_m_variance(0.0001, 0.0001, 50, data)
+
+    plt.plot(mvar_ef.keys(), mvar_ef.values(), label='M-Variance')
+    plt.plot(cvar_ef.keys(), cvar_ef.values(), label='C-VaR')
+    plt.xlabel('Risk')
+    plt.ylabel('Return')
+    plt.legend()
+    plt.show()
 
 
-def efficient_weights_mean_variance(cov_m, mu0, mu_m):
-    matrix_a = np.zeros((len(cov_m) + 2, len(cov_m) + 2))
-    matrix_a[0:len(cov_m), 0:len(cov_m)] = cov_m * 2
-    matrix_a[len(cov_m), 0:len(cov_m)] = 1
-    matrix_a[len(cov_m) + 1, 0:len(cov_m)] = np.transpose(mu_m)
-    matrix_a[0:len(cov_m), len(cov_m)] = 1
-    matrix_a[0:len(cov_m), len(cov_m) + 1] = list(mu_m)
+def maximize_cvar_sharpe(weights, return_data, risk_free, confidence):
+    return_p = port_return(weights, return_data.mean())
+    cvar = calculate_cvar(weights, return_data, confidence)
 
-    matrix_b = np.zeros((len(mu_m) + 2, 1))
-    matrix_b[len(mu_m), 0] = 1
-    matrix_b[len(mu_m) + 1, 0] = mu0
-
-    opt = np.dot(np.linalg.inv(matrix_a), matrix_b)
-    return opt[:-2]
+    return -(return_p - risk_free) / cvar
 
 
-def efficient_frontier_c_var(mu_null_start, mu_null_increment, mu_null_iterations, return_data, alpha):
-    plot_data = {}
-    total_portfolios = mu_null_iterations
-    fail_count = 0
-    cvar_large_count = 0
-    for i in range(total_portfolios):
-        sys.stdout.write('\r')
-        sys.stdout.write('Percent Complete:  ' + str(round((i / total_portfolios) * 100, 2)) + '%')
-        sys.stdout.flush()
+def maximize_variance_sharpe(weights, return_data, risk_free):
+    return_p = port_return(weights, return_data.mean())
+    standard_deviation_p = math.sqrt(port_variance(weights, return_data.cov()))
 
-        df_returns = return_data
-        mu_null_value = mu_null_increment * i + mu_null_start
-        mu_matrix = df_returns.mean()
-        covariance_matrix = df_returns.cov()
-
-        cons = [{'type': 'eq', 'fun': constraint_sum},
-                {'type': 'eq', 'fun': constraint_mu_null, 'args': (mu_matrix, mu_null_value,)}]
+    return -(return_p - risk_free) / standard_deviation_p
 
 
+def optimal_portfolio_weights_cvar(returns_data, confidence, risk_free):
 
-        optimize = scipy.optimize.minimize(calculate_var,
-                                           x0=np.full((len(df_returns.columns)), 1),
-                                           args=(df_returns, alpha),
-                                           constraints=cons,
-                                           options={'maxiter': 20000})
+    cons = [{'type': 'eq', 'fun': constraint_sum}]
 
-        if not optimize.success:
-            fail_count += 1
-            continue
+    minimizer_kwargs = {"args": (returns_data, risk_free, confidence),
+                        "constraints": cons}
 
-        if optimize.fun < -100:
-            cvar_large_count += 1
-            continue
+    optimize = scipy.optimize.basinhopping(maximize_cvar_sharpe,
+                                           x0=np.full((len(returns_data.columns)), 1 / len(returns_data.columns)),
+                                           minimizer_kwargs=minimizer_kwargs)
 
-        weights = optimize.x
-        port_return = mu_null_value
-        port_risk = math.sqrt(np.dot(np.dot(np.transpose(weights), covariance_matrix), weights))
-
-        plot_data[port_risk] = port_return
-    print(fail_count)
-    print(cvar_large_count)
-    return plot_data
+    return optimize.x
 
 
-def efficient_frontier_m_variance(mu_null_start, mu_null_increment, mu_null_iterations, return_data):
+def optimal_portfolio_weights_variance(returns_data, risk_free):
+    cons = [{'type': 'eq', 'fun': constraint_sum}]
 
-    plot_data = {}
-    for i in range(mu_null_iterations):
-        sys.stdout.write('\r')
-        sys.stdout.write('Percent Complete:  ' + str(round((i / mu_null_iterations) * 100, 2)) + '%')
-        sys.stdout.flush()
+    minimizer_kwargs = {"args": (returns_data, risk_free),
+                        "constraints": cons}
 
-        mu_null_value = mu_null_increment * i + mu_null_start
-        mu_matrix = np.transpose(return_data.mean())
-        covariance_matrix = return_data.cov()
+    optimize = scipy.optimize.basinhopping(maximize_variance_sharpe,
+                                           x0=np.full((len(returns_data.columns)), 1 / len(returns_data.columns)),
+                                           minimizer_kwargs=minimizer_kwargs)
 
-        eff_weights = efficient_weights_mean_variance(covariance_matrix, mu_null_value, mu_matrix)
-        port_return = mu_null_value
-        port_variance = port_var(eff_weights, covariance_matrix)[0][0]
-
-        port_risk = math.sqrt(port_variance)
-
-        plot_data[port_risk] = port_return
-
-    return plot_data
+    return optimize.x
 
 
-cvar_ef = efficient_frontier_c_var(0.0001, 0.0001, 10, df_returns_hf, 0.05)
-mvar_ef = efficient_frontier_m_variance(0.0001, 0.0001, 10, df_returns_hf)
+def plot_everything(data, direc):
+    cvar_ef = efficient_frontier_cvar(0.0001, 0.0001, 1000, data, 95)
+    mvar_ef = efficient_frontier_m_variance(0.0001, 0.0001, 1000, data)
+    opt = 'cvar'
+    url = f'ef_{opt}_{direc}.csv'
+    pd.DataFrame(cvar_ef, index=[0]).to_csv(url)
+    opt = 'mvar'
+    url = f'ef_{opt}_{direc}.csv'
+    pd.DataFrame(mvar_ef, index=[0]).to_csv(url)
 
-plt.plot(mvar_ef.keys(), mvar_ef.values(), label='M-Variance')
-plt.plot(cvar_ef.keys(), cvar_ef.values(), label='C-VaR')
-plt.xlabel('Risk')
-plt.ylabel('Return')
-plt.legend()
-plt.show()
+
