@@ -39,6 +39,7 @@ for ticker in tickers:
 
 # SML
 slope = np.average(marketRiskPremium)
+
 eri = list(map(lambda x: x * slope + rf, SCL["Beta"]))
 
 # Plotting

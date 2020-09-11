@@ -1,0 +1,3 @@
+https://study.com/academy/lesson/variance-covariance-method-for-calculating-value-at-risk.html
+
+https://www.quantopian.com/research/notebooks/Cloned%20from%20%22Quantopian%20Lecture%20Series%3A%20VaR%20and%20CVaR%20%28Expected%20Shortfall%29%22.ipynb

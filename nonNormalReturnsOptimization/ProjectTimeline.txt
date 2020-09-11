@@ -1,0 +1,13 @@
+- To Do:
+1.) Inital
+	- Hedge Funds Summary
+		- Mean, sd, skew, kurtosis
+
+2.) MVO #1
+	- MVO on Equities, FI, and HFRI indicies
+	- Get ORP
+
+2.) MVO #2
+	- Include M-CVAR
+	- Include M-VSK
+	- Get ORP

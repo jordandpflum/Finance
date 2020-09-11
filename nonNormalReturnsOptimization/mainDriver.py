@@ -104,7 +104,39 @@ plt.show()
 
 
 
+from scipy.stats import norm
+def calculate_VaR(returns, alpha):
+    """
+    Calculates the value at risk at a given alpha level
+    :param returns: data frame of returns
+    :param alpha: alpha level
+    :return: Value at Risk
+    """
+    stdev = returns.std()
+    mean = returns.mean()
+    VaR = -(norm.ppf(1 - alpha, loc=mean, scale=stdev))
+    print(VaR)
+    return VaR
+def calculate_CVaR(returns, alpha, VaR):
+    """
+    Calculates the conditional value at risk at a given alpha level
+    :param returns: data frame of returns
+    :param alpha: onfidence level
+    :param VaR: specified value at risk
+    :return: Conditional Value at Risk
+    """
+    stdev = returns.std()
+    mean = returns.mean()
+    pdf_at_VaR = norm(loc=mean, scale=stdev).pdf(1 - alpha)
+    CVaR = (0 - VaR * pdf_at_VaR) * (1 / (1 - alpha))
+    return CVaR
 
+var = calculate_VaR(returnData[exampleAsset], .05)
+print("5.0% VaR threshold:",var)
+cvar = calculate_CVaR(returnData[exampleAsset], .05, var)
+
+print("5.0% VaR threshold:",var)
+print("5.0% CVaR:",cvar)
 
 
 
