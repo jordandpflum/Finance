@@ -31,13 +31,15 @@ This report analyzes the effect of mutual fund size' on their performance. We me
 ![Alt text](Images/returnVsTNA_annualized.png?raw=true "Return Vs TNA (annualized)")
 ![Alt text](Images/riskVsTNA_annualized.png?raw=true "Risk Vs TNA (annualized)")
 
-
+<center>
 |           Model            | Coefficient  | Standard Error | P-Value |  R^2  |
 | :------------------------: | :----------: | :------------: | :-----: | :---: |
 |  TNA vs Return (monthly)   | 3.73605e-07  |   2.310e-07    |  0.106  |  0.0  |
 | TNA vs Return (Annualized) | -1.6667e-06  |   1.030e-06    |  .107   | 0.002 |
 |   TNA vs Risk (monthly)    | -3.37054e-06 |    2.17e-05    |  .102   |   0   |
 |  TNA vs Risk (Annualized)  | -5.7736e-06  |    3.58e-06    |  0.107  | 0.002 |
+   
+</center>
 
 ### Conclusion
 
