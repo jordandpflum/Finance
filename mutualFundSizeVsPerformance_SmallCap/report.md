@@ -43,5 +43,3 @@ This report analyzes the effect of mutual fund size' on their performance. We me
 Surprisingly, we found the the Total Net Assets of a firm employing a Small Cap Value Strategy had no statistically significant impact on Expected Return (or Risk). However, it should be noted that there were limited number of 'Mega' Funds (funds with over $2B is Total Net Assets). Those funds appeared to have lower risk than smaller funds.
 
 Given the findings of this report, the question can be posed if a fund's size, previously thought to be a tremendous strength, can possibly be their Achilles heel. Perhaps their size, and by extension their market impact, make profitable strategies unviable. Or maybe their large market orders are too easily identifiable by increasing sophisticated trading algorithms causing other players to undercut previously safe profits. 
-
-Our group wished to analyze the effect of a mutual fund's size on their performance
