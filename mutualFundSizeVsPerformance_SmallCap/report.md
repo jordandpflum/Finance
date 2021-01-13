@@ -26,7 +26,11 @@ This report analyzes the effect of mutual fund size' on their performance. We me
 
 ### Results
 
-![Alt text](Images/returnVsTNA_annualized.png?raw=true "Title")
+![Alt text](Images/returnVsTNA_Monthly.png?raw=true "Return Vs TNA (monthly)")
+![Alt text](Images/riskVsTNA_annualized.png?raw=true "Risk Vs TNA (monthly)")
+![Alt text](Images/returnVsTNA_annualized.png?raw=true "Return Vs TNA (annualized)")
+![Alt text](Images/riskVsTNA_annualized.png?raw=true "Risk Vs TNA (annualized)")
+
 
 |           Model            | Coefficient  | Standard Error | P-Value |  R^2  |
 | :------------------------: | :----------: | :------------: | :-----: | :---: |
